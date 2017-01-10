@@ -16,6 +16,7 @@ def band_mask(radius, mask):
     radius : float
         The band radius (1/2 of the width) will be
         ``int(radius*min(mask.shape))``.
+
     mask : np.ndarray
         Pre-allocated boolean matrix of zeros.
 
@@ -50,18 +51,18 @@ def band_mask(radius, mask):
     # duplication but it's the most efficient way with numba
     if nx < ny:
         # Calculate the radius in indices, rather than proportion
-        radius = int(round(nx*radius))
+        radius = int(round(nx * radius))
         # Force radius to be at least one
         radius = 1 if radius == 0 else radius
-        for i in xrange(nx):
-            for j in xrange(ny):
+        for i in range(nx):
+            for j in range(ny):
                 # If this i, j falls within the band
                 if i - j + (nx - radius) < nx and j - i + (nx - radius) < ny:
                     # Set the mask to 1 here
                     mask[i, j] = 1
     # Same exact approach with ny/ny and i/j switched.
     else:
-        radius = int(round(ny*radius))
+        radius = int(round(ny * radius))
         radius = 1 if radius == 0 else radius
         for i in range(nx):
             for j in range(ny):
@@ -79,32 +80,38 @@ def dtw_core(dist_mat, add_pen, mul_pen, traceback):
     ----------
     dist_mat : np.ndarray
         Distance matrix to update with lowest-cost path to each entry.
+
     add_pen : int or float
         Additive penalty for non-diagonal moves.
+
     mul_pen : int or float
         Multiplicative penalty for non-diagonal moves.
+
     traceback : np.ndarray
         Matrix to populate with the lowest-cost traceback from each entry.
+
     """
     # At each loop iteration, we are computing lowest cost to D[i + 1, j + 1]
-    # TOOD: Would probably be faster if xrange(1, dist_mat.shape[0])
-    for i in xrange(dist_mat.shape[0] - 1):
-        for j in xrange(dist_mat.shape[1] - 1):
+    # TOOD: Would probably be faster if range(1, dist_mat.shape[0])
+    for i in range(dist_mat.shape[0] - 1):
+        for j in range(dist_mat.shape[1] - 1):
             # Diagonal move (which has no penalty) is lowest
-            if dist_mat[i, j] <= mul_pen*dist_mat[i, j + 1] + add_pen and \
-               dist_mat[i, j] <= mul_pen*dist_mat[i + 1, j] + add_pen:
+            if dist_mat[i, j] <= mul_pen * dist_mat[i, j + 1] + add_pen and \
+               dist_mat[i, j] <= mul_pen * dist_mat[i + 1, j] + add_pen:
                 traceback[i + 1, j + 1] = 0
                 dist_mat[i + 1, j + 1] += dist_mat[i, j]
             # Horizontal move (has penalty)
             elif (dist_mat[i, j + 1] <= dist_mat[i + 1, j] and
-                  mul_pen*dist_mat[i, j + 1] + add_pen <= dist_mat[i, j]):
+                  mul_pen * dist_mat[i, j + 1] + add_pen <= dist_mat[i, j]):
                 traceback[i + 1, j + 1] = 1
-                dist_mat[i + 1, j + 1] += mul_pen*dist_mat[i, j + 1] + add_pen
+                dist_mat[i + 1, j + 1] += (mul_pen * dist_mat[i, j + 1] +
+                                           add_pen)
             # Vertical move (has penalty)
             elif (dist_mat[i + 1, j] <= dist_mat[i, j + 1] and
-                  mul_pen*dist_mat[i + 1, j] + add_pen <= dist_mat[i, j]):
+                  mul_pen * dist_mat[i + 1, j] + add_pen <= dist_mat[i, j]):
                 traceback[i + 1, j + 1] = 2
-                dist_mat[i + 1, j + 1] += mul_pen*dist_mat[i + 1, j] + add_pen
+                dist_mat[i + 1, j + 1] += (mul_pen * dist_mat[i + 1, j] +
+                                           add_pen)
 
 
 @numba.jit(nopython=True)
@@ -129,9 +136,9 @@ def dtw_core_masked(dist_mat, add_pen, mul_pen, traceback, mask):
         should be allowed in the DTW path and ``mask[i, j] == 0`` otherwise.
     """
     # At each loop iteration, we are computing lowest cost to D[i + 1, j + 1]
-    # TOOD: Would probably be faster if xrange(1, dist_mat.shape[0])
-    for i in xrange(dist_mat.shape[0] - 1):
-        for j in xrange(dist_mat.shape[1] - 1):
+    # TOOD: Would probably be faster if range(1, dist_mat.shape[0])
+    for i in range(dist_mat.shape[0] - 1):
+        for j in range(dist_mat.shape[1] - 1):
             # If this point is not reachable, set the cost to infinity
             if not mask[i, j] and not mask[i, j + 1] and not mask[i + 1, j]:
                 dist_mat[i + 1, j + 1] = np.inf
