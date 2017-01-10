@@ -125,12 +125,16 @@ def dtw_core_masked(dist_mat, add_pen, mul_pen, traceback, mask):
     ----------
     dist_mat : np.ndarray
         Distance matrix to update with lowest-cost path to each entry.
+
     add_pen : int or float
         Additive penalty for non-diagonal moves.
+
     mul_pen : int or float
         Multiplicative penalty for non-diagonal moves.
+
     traceback : np.ndarray
         Matrix to populate with the lowest-cost traceback from each entry.
+
     mask : np.ndarray
         A boolean matrix, such that ``mask[i, j] == 1`` when the index ``i, j``
         should be allowed in the DTW path and ``mask[i, j] == 0`` otherwise.
@@ -145,27 +149,27 @@ def dtw_core_masked(dist_mat, add_pen, mul_pen, traceback, mask):
             else:
                 # Diagonal move (which has no penalty) is lowest, or is the
                 # only valid move
-                if ((dist_mat[i, j] <= mul_pen*dist_mat[i, j + 1] + add_pen
+                if ((dist_mat[i, j] <= mul_pen * dist_mat[i, j + 1] + add_pen
                      or not mask[i, j + 1]) and
-                    (dist_mat[i, j] <= mul_pen*dist_mat[i + 1, j] + add_pen
+                    (dist_mat[i, j] <= mul_pen * dist_mat[i + 1, j] + add_pen
                      or not mask[i + 1, j])):
                     traceback[i + 1, j + 1] = 0
                     dist_mat[i + 1, j + 1] += dist_mat[i, j]
                 # Horizontal move (has penalty)
                 elif ((dist_mat[i, j + 1] <= dist_mat[i + 1, j]
                        or not mask[i + 1, j]) and
-                      (mul_pen*dist_mat[i, j + 1] + add_pen <= dist_mat[i, j]
+                      (mul_pen * dist_mat[i, j + 1] + add_pen <= dist_mat[i, j]
                        or not mask[i, j])):
                     traceback[i + 1, j + 1] = 1
-                    dist_mat[i + 1, j + 1] += (mul_pen*dist_mat[i, j + 1] +
+                    dist_mat[i + 1, j + 1] += (mul_pen * dist_mat[i, j + 1] +
                                                add_pen)
                 # Vertical move (has penalty)
                 elif ((dist_mat[i + 1, j] <= dist_mat[i, j + 1]
                        or not mask[i, j + 1]) and
-                      (mul_pen*dist_mat[i + 1, j] + add_pen <= dist_mat[i, j]
+                      (mul_pen * dist_mat[i + 1, j] + add_pen <= dist_mat[i, j]
                        or not mask[i, j])):
                     traceback[i + 1, j + 1] = 2
-                    dist_mat[i + 1, j + 1] += (mul_pen*dist_mat[i + 1, j] +
+                    dist_mat[i + 1, j + 1] += (mul_pen * dist_mat[i + 1, j] +
                                                add_pen)
 
 
@@ -178,21 +182,26 @@ def dtw(distance_matrix, gully=1., additive_penalty=0.,
     ----------
     distance_matrix : np.ndarray
         Distances between two sequences.
-    gully : float
+
+    gully : float, default=1.
         Sequences must match up to this porportion of shorter sequence. Default
         1., which means the entirety of the shorter sequence must be matched
         to part of the longer sequence.
-    additive_penalty : int or float
+
+    additive_penalty : int or float, default=0
         Additive penalty for non-diagonal moves. Default 0. means no penalty.
-    multiplicative_penalty : int or float
+
+    multiplicative_penalty : int or float, default=1.0
         Multiplicative penalty for non-diagonal moves. Default 1. means no
         penalty.
-    mask : np.ndarray
+
+    mask : np.ndarray, default=None
         A boolean matrix, such that ``mask[i, j] == 1`` when the index ``i, j``
         should be allowed in the DTW path and ``mask[i, j] == 0`` otherwise.
         If None (default), don't apply a mask - this is more efficient than
         providing a mask of all 1s.
-    inplace : bool
+
+    inplace : bool, default=True
         When ``inplace == True`` (default), `distance_matrix` will be modified
         in-place when computing path costs.  When ``inplace == False``,
         `distance_matrix` will not be modified.
@@ -202,9 +211,11 @@ def dtw(distance_matrix, gully=1., additive_penalty=0.,
     x_indices : np.ndarray
         Indices of the lowest-cost path in the first dimension of the distance
         matrix.
+
     y_indices : np.ndarray
         Indices of the lowest-cost path in the second dimension of the distance
         matrix.
+
     score : float
         DTW score of lowest cost path through the distance matrix, including
         penalties.
@@ -226,7 +237,7 @@ def dtw(distance_matrix, gully=1., additive_penalty=0.,
     if gully < 1.:
         # Allow the end of the path to start within gully percentage of the
         # smaller distance matrix dimension
-        gully = int(gully*min(distance_matrix.shape))
+        gully = int(gully * min(distance_matrix.shape))
     else:
         # When gully is 1 require matching the entirety of the smaller sequence
         gully = min(distance_matrix.shape) - 1
