@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='djitw',
-    version='0.0.0',
+    version='0.0.1',
     description='Fast just-in-time compiled DTW',
     author='Colin Raffel',
     author_email='craffel@gmail.com',
@@ -19,7 +19,7 @@ setup(
         "Topic :: Scientific/Engineering :: Information Analysis",
     ],
     keywords='dtw',
-    license='GPL',
+    license='MIT',
     install_requires=[
         'numpy >= 1.7.0',
         'numba >= 0.18.2'
